@@ -1,0 +1,399 @@
+{
+  "info": {
+    "_postman_id": "5f4dd31e-8e90-4a21-bd75-dd5c9cb0b7ad",
+    "name": "Ecommerce API",
+    "description": "Colección para verificar el backend Express de ecommerce.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "email", "value": "founder@example.com" },
+    { "key": "loginCode", "value": "000000" },
+    { "key": "token", "value": "" },
+    { "key": "productId", "value": "prd-solar-kit" },
+    { "key": "orderId", "value": "" },
+    { "key": "mpSignature", "value": "mp-dev-secret" }
+  ],
+  "item": [
+    {
+      "name": "Request Login Code",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 202', () => pm.response.to.have.status(202));",
+              "const body = pm.response.json();",
+              "pm.test('incluye expiresAt y mensaje', () => {",
+              "  pm.expect(body.expiresAt).to.exist;",
+              "  pm.expect(body.message).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth"]
+        },
+        "description": "POST /auth: crea o busca un usuario y envía un código temporal."
+      }
+    },
+    {
+      "name": "Exchange Code For Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('devuelve token', () => {",
+              "  pm.expect(body.token).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.expiresIn).to.be.a('string');",
+              "});",
+              "if (body.token) {",
+              "  pm.collectionVariables.set('token', body.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"code\": \"{{loginCode}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "token"]
+        },
+        "description": "POST /auth/token: valida el código e inicializa la variable de colección token."
+      }
+    },
+    {
+      "name": "Get Profile (/me)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('respuesta incluye usuario', () => {",
+              "  pm.expect(body.user).to.be.an('object');",
+              "  pm.expect(body.user).to.have.property('id');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["me"]
+        }
+      }
+    },
+    {
+      "name": "Update Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('usuario actualizado', () => {",
+              "  pm.expect(body.user).to.be.an('object');",
+              "  pm.expect(body.user).to.have.property('updatedAt');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Founder Demo\",\n  \"phone\": \"+54 11 5555 1111\",\n  \"preferences\": {\n    \"newsletter\": true\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["me"]
+        }
+      }
+    },
+    {
+      "name": "Update Address",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('direccion guardada', () => {",
+              "  pm.expect(body.user).to.be.an('object');",
+              "  pm.expect(body.user.address).to.be.an('object');",
+              "  pm.expect(body.user.address.city).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"street\": \"Av. Demo\",\n  \"number\": \"1234\",\n  \"city\": \"Buenos Aires\",\n  \"state\": \"CABA\",\n  \"zipCode\": \"1000\",\n  \"country\": \"AR\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/me/address",
+          "host": ["{{baseUrl}}"],
+          "path": ["me", "address"]
+        }
+      }
+    },
+    {
+      "name": "Search Products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('lista de productos', () => {",
+              "  pm.expect(body.items).to.be.an('array');",
+              "  pm.expect(body).to.have.property('total');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/search?q=kit&offset=0&limit=5",
+          "host": ["{{baseUrl}}"],
+          "path": ["search"],
+          "query": [
+            { "key": "q", "value": "kit" },
+            { "key": "offset", "value": "0" },
+            { "key": "limit", "value": "5" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Product Detail",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "const productIdVariable = pm.collectionVariables.get('productId') || pm.variables.get('productId');",
+              "pm.test('detalla producto solicitado', () => {",
+              "  pm.expect(body.product).to.be.an('object');",
+              "  if (productIdVariable) {",
+              "    pm.expect(body.product.id).to.eql(productIdVariable);",
+              "  }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products/{{productId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["products", "{{productId}}"]
+        }
+      }
+    },
+    {
+      "name": "Create Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('crea orden y payment url', () => {",
+              "  pm.expect(body.orderId).to.be.a('string');",
+              "  pm.expect(body.paymentUrl).to.be.a('string');",
+              "  pm.expect(body.status).to.be.a('string');",
+              "});",
+              "if (body.orderId) {",
+              "  pm.collectionVariables.set('orderId', body.orderId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/order?productId={{productId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["order"],
+          "query": [
+            { "key": "productId", "value": "{{productId}}" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "List My Orders",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('devuelve listado de ordenes', () => {",
+              "  pm.expect(body.items).to.be.an('array');",
+              "  pm.expect(body).to.have.property('total');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/me/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["me", "orders"]
+        }
+      }
+    },
+    {
+      "name": "Get Order Detail",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('devuelve orden con producto', () => {",
+              "  pm.expect(body.order).to.be.an('object');",
+              "  pm.expect(body.product).to.be.an('object');",
+              "});",
+              "const expectedOrderId = pm.collectionVariables.get('orderId');",
+              "if (expectedOrderId) {",
+              "  pm.test('orderId coincide', () => {",
+              "    pm.expect(body.order.id).to.eql(expectedOrderId);",
+              "  });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/order/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["order", "{{orderId}}"]
+        }
+      }
+    },
+    {
+      "name": "MercadoPago IPN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('webhook valida firma y orden', () => {",
+              "  pm.expect(body.orderId).to.be.a('string');",
+              "  pm.expect(body.status).to.be.a('string');",
+              "});",
+              "const expectedOrderId = pm.collectionVariables.get('orderId');",
+              "if (expectedOrderId) {",
+              "  pm.test('orderId devuelto coincide', () => {",
+              "    pm.expect(body.orderId).to.eql(expectedOrderId);",
+              "  });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Signature", "value": "{{mpSignature}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"approved\",\n  \"paymentId\": \"mp-123456789\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ipn/mercadopago",
+          "host": ["{{baseUrl}}"],
+          "path": ["ipn", "mercadopago"]
+        }
+      }
+    }
+  ]
+}
