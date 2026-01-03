@@ -2,6 +2,9 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { env } from '../config/env.js';
 import type { OrderStatus, Product, User } from './database.js';
 
+type PreferenceInstance = InstanceType<typeof Preference>;
+type PreferenceCreateBody = Parameters<PreferenceInstance['create']>[0]['body'];
+
 export class MercadoPagoService {
   private readonly preferenceClient: Preference;
 
@@ -48,7 +51,7 @@ export class MercadoPagoService {
     const shouldSendBackUrls = Object.keys(backUrls).length > 0;
 
     try {
-      const body: Record<string, unknown> = {
+      const body: PreferenceCreateBody = {
         external_reference: orderId,
         items: [
           {
@@ -68,9 +71,7 @@ export class MercadoPagoService {
           address: user.address
             ? {
                 street_name: user.address.street,
-                street_number: user.address.number
-                  ? Number.parseInt(user.address.number, 10) || undefined
-                  : undefined,
+                street_number: user.address.number?.trim() || undefined,
                 zip_code: user.address.zipCode
               }
             : undefined
