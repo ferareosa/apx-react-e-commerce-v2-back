@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 
 config();
 
-const resolvedPort = Number.parseInt(process.env.SERVER_PORT ?? process.env.PORT ?? '4000', 10);
+const resolvedPort = Number.parseInt(process.env.PORT ?? process.env.SERVER_PORT ?? '4000', 10);
 const clientBaseUrl = process.env.CLIENT_BASE_URL ?? 'http://localhost:5173';
 const serverPublicUrl = process.env.SERVER_PUBLIC_URL ?? `http://localhost:${resolvedPort}`;
 
