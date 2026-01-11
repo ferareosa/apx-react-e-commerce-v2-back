@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -b ./tsconfig.server.json",
+    "build": "tsc --project ./tsconfig.server.json --skipLibCheck",
     "start": "node --enable-source-maps dist/server/index.js"
   },
   "dependencies": {
