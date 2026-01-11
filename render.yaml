@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: ecommerce-server
+    env: node
+    plan: free
+    autoDeploy: true
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALGOLIA_APP_ID
+        sync: false
+      - key: ALGOLIA_API_KEY
+        sync: false
+      - key: ALGOLIA_INDEX_NAME
+        sync: false
+      - key: MP_ACCESS_TOKEN
+        sync: false
+      - key: MP_PUBLIC_KEY
+        sync: false
+      - key: MP_WEBHOOK_SECRET
+        sync: false
+      - key: CLIENT_BASE_URL
+        sync: false
+      - key: SERVER_PUBLIC_URL
+        sync: false
+      - key: MP_SUCCESS_URL
+        sync: false
+      - key: MP_FAILURE_URL
+        sync: false
+      - key: MP_PENDING_URL
+        sync: false
+      - key: MP_NOTIFICATION_URL
+        sync: false
